@@ -1,4 +1,10 @@
-import numpy as np
+import math
+
+def _norm(X):
+	total = 0;
+	for x in X:
+		total = total + x*x
+	return math.sqrt(total)
 
 def gradapprox(f, fx, x, dx):
 	g = x * 0.0
@@ -19,7 +25,7 @@ def graddesc(f, x0, dx, T=30, alpha=1, gtol=1e-2, tol=1e-6, obs=None):
 		g = -gradapprox(f, fx, x, dx)
 		if (obs != None):
 			obs(fx, x, g, alpha)
-		gnorm = np.linalg.norm(g)
+		gnorm = _norm(g)
 
 		x1 = x+alpha*g
 		fx1 = f(x1)
