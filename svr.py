@@ -97,5 +97,7 @@ fevals = 0
 x = graddesc(loss_func,x0,dx,obs=myobs,alpha=0.25)
 print("final solution="+str(x))
 print("function evals="+str(fevals))
-ax.plot(X,Y,Z,'go-')
+ax.plot(X,Y,Z,'bo-')
+ax.plot([X[0]],[Y[0]],[Z[0]],'go-')
+ax.plot([X[-1]],[Y[-1]],[Z[-1]],'ro-')
 plt.show()
