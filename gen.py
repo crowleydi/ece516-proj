@@ -1,8 +1,8 @@
+import os
+import time
 import numpy as np
 import pandas as pd
 import random
-import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from sklearn import svm
 from sklearn.model_selection import cross_val_score
 from graddesc import graddesc
@@ -42,8 +42,9 @@ def loss_func(x):
 		clf = svm.NuSVR(gamma='auto',C=C,nu=nu)
 	
 	scores = cross_val_score(clf, Xtrain, ytrain, cv=5,scoring='neg_mean_squared_error')
-	print("scores="+str(scores))
+	#print("scores="+str(scores))
 	return -10*scores.mean()
+
 
 
 #
@@ -56,48 +57,59 @@ else:
 	Y = np.arange(0.1,0.9,0.8/40)
 
 X, Y = np.meshgrid(X, Y)
-Z = X * 0.0
 
-for i in range(X.shape[0]):
-	for j in range(X.shape[1]):
-		Z[i,j] = loss_func([X[i,j],Y[i,j]])
-
-fig = plt.figure()
-ax = fig.gca(projection='3d')
-
-# Plot the surface.
-surf = ax.plot_surface(X, Y, Z, cmap=plt.cm.hot, alpha=0.7)
-# linewidth=0, antialiased=False)
+surffile='surffile.npy'
+if os.path.isfile(surffile):
+	print("loading surf file")
+	Z = np.load(surffile)
+else:
+	Z = X * 0.0
+	Zlow = np.inf
+	for i in range(X.shape[0]):
+		for j in range(X.shape[1]):
+			Z[i,j] = loss_func([X[i,j],Y[i,j]])
+			if Z[i,j] < Zlow:
+				Zlow = Z[i,j]
+				print("low at X="+str(X[i,j]))
+				print("low at Y="+str(Y[i,j]))
+	np.save(surffile,Z)
+	print("saved surf file")
 
 # function to observe the gradient descent
 X = []
 Y = []
 Z = []
-
 def myobs(fx, x, g, alpha):
 	global X, Y, Z
 	X.append(x[0])
 	Y.append(x[1])
 	Z.append(fx)
 
-# calculate a random starting point
-C = np.random.uniform(low=-1,high=2)
-if svr:
-	eps = np.random.uniform(low=-3,high=-1)
-	x0=np.array([C, eps])
-else:
-	nu = np.random.uniform(low=0.1,high=0.9)
-	x0=np.array([C, nu])
+for n in range(100):
+	X = []
+	Y = []
+	Z = []
 
-dx = np.array([0.01,0.01])
+	# calculate a random starting point
+	C = np.random.uniform(low=-1,high=2)
+	if svr:
+		eps = np.random.uniform(low=-3,high=-1)
+		x0=np.array([C, eps])
+	else:
+		nu = np.random.uniform(low=0.1,high=0.9)
+		x0=np.array([C, nu])
 
-#print("loss_func(x0)="+str(loss_func(x0)))
-#print("loss_func(x0)="+str(loss_func(x0)))
-fevals = 0
-x = graddesc(loss_func,x0,dx,obs=myobs,alpha=0.25)
-print("final solution="+str(x))
-print("function evals="+str(fevals))
-ax.plot(X,Y,Z,'bo-')
-ax.plot([X[0]],[Y[0]],[Z[0]],'go-')
-ax.plot([X[-1]],[Y[-1]],[Z[-1]],'ro-')
-plt.show()
+	dx = np.array([0.01,0.01])
+
+	#print("loss_func(x0)="+str(loss_func(x0)))
+	#print("loss_func(x0)="+str(loss_func(x0)))
+	fevals = 0
+	x = graddesc(loss_func,x0,dx,obs=myobs,alpha=0.25)
+	print("final solution="+str(x))
+	print("function evals="+str(fevals))
+	hist=np.zeros((3,len(X)))
+	hist[0,:]=X
+	hist[1,:]=Y
+	hist[2,:]=Z
+	epoch_time = int(time.time())
+	np.save("gdeschist"+str(epoch_time)+".npy",hist)
