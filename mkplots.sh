@@ -1,5 +1,5 @@
 #!/bin/bash
-FILES=plots/*.npy
+FILES=keep/*.npy
 for f in $FILES
 do
   echo "Processing $f file..."
