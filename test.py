@@ -9,6 +9,7 @@ def myfunc(xx):
 	y = xx[1]
 	# rosenbrock
 	z = (1-x)**2+100*(y-x*x)**2
+	# simple 2-d quadratic
 	#z = (x+7)**2+(y-2)**2
 	fevals = fevals + 1
 	return z

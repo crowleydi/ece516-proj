@@ -9,9 +9,9 @@ def _norm(X):
 
 def gradapprox(f, fx, x, dx):
 	# f - function
-	# fx - function value evaluated at x
+	# fx - value of function evaluated at x
 	# x - location to calculate gradient
-	# dx - vector of lengths to wiggle in each dimension
+	# dx - vector of delta-x to "wiggle" in each dimension
 
 	# initialize gradient vector
 	g = x * 0.0
@@ -47,26 +47,26 @@ def graddesc(f, x0, dx, T=30, alpha=1, gtol=1e-2, tol=1e-6, obs=None):
 		if (obs != None):
 			obs(fx, x, g, alpha)
 
-		#gnorm = _norm(g)
-
 		# calculate the next point along the gradient direction
 		x1 = x+alpha*g
 		fx1 = f(x1)
-		diff = abs(fx-fx1)
 		nstep = nstep + 1
 
 		#
-		# in this loop we basically do a line search
+		# In this loop we basically do a line search
 		# along the gradient line until we find a
 		# location that goes down or only goes up
-		# a little bit (10%)
+		# a little bit (10%).
+		#
+		# This distance is arbitrary
+		#
 		loop = 4
 		while (fx1 > fx*1.1 and loop > 0):
 			loop = loop - 1
+			nstep = 0
 
 			# need to slow down and not move as far
 			alpha = alpha / 2.0
-			nstep = 0
 			x1 = x+alpha*g
 			fx1 = f(x1)
 
@@ -77,6 +77,7 @@ def graddesc(f, x0, dx, T=30, alpha=1, gtol=1e-2, tol=1e-6, obs=None):
 			#if (diff < tol):
 				#break
 
+		diff = abs(fx-fx1)
 		# move
 		fx = fx1
 		x = x1
@@ -91,6 +92,7 @@ def graddesc(f, x0, dx, T=30, alpha=1, gtol=1e-2, tol=1e-6, obs=None):
 			print("exiting tolerance")
 			break
 
+		#gnorm = _norm(g)
 		#if(gnorm < gtol):
 			#print("exiting gradient")
 			#break
